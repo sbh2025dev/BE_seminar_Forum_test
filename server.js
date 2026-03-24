@@ -11,6 +11,9 @@ app.use(express.urlencoded({ extended: true }));
 app.set("view engine", "ejs");
 
 app.use(
+  // secret: 세션 쿠키를 암호화할 때 사용하는 문자열
+  // resave: 세션이 변경되지 않아도 매 요청마다 세션을 저장할지 여부
+  // saveUninitialized: 초기화되지 않은 세션을 저장할지 여부
   session({
     secret: "forum-secret-key",
     resave: false,
@@ -19,6 +22,14 @@ app.use(
 );
 app.use(passport.initialize());
 app.use(passport.session());
+
+// 모든 템플릿에서 로그인한 사용자 정보를 사용할 수 있도록 설정한다.
+// 요청 들어온 후 실행되어 ejs 템플릿이 렌더링되기 전에 실행된다.
+app.use((req, res, next) => {
+  // res.locals: 템플릿에서 사용할 수 있는 변수들을 담는 객체, req.user: 로그인한 사용자 정보가 담긴 객체
+  res.locals.user = req.user || null;
+  next();
+});
 
 // 로그인 검증 방식을 passport에 등록한다.
 passport.use(
@@ -48,6 +59,7 @@ passport.serializeUser((user, done) => done(null, user._id.toString()));
 passport.deserializeUser(async (id, done) => {
   try {
     const user = await db.collection("user").findOne({ _id: new ObjectId(id) });
+    // user 객체를 done 함수의 두 번째 인자로 전달해서 req.user에 저장한다.
     done(null, user);
   } catch (err) {
     done(err);
@@ -110,6 +122,7 @@ app.post("/register", async (req, res) => {
       .findOne({ username: req.body.username });
     if (existing)
       return res.render("register", { error: "이미 사용 중인 아이디입니다." });
+    // bcrypt.hash: 비밀번호를 해시하는 함수, 첫 번째 인자는 해시할 문자열, 두 번째 인자는 솔트 라운드 수 (보안 강도)
     const hash = await bcrypt.hash(req.body.password, 10);
     await db
       .collection("user")
