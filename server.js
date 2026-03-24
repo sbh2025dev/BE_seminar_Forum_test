@@ -28,6 +28,8 @@ passport.use(
       const user = await db.collection("user").findOne({ username });
       if (!user)
         return done(null, false, { message: "존재하지 않는 아이디입니다." });
+
+      // bcrypt.compare: 입력한 비밀번호와 DB에 저장된 해시된 비밀번호를 비교한다.
       const match = await bcrypt.compare(password, user.password);
       if (!match)
         return done(null, false, { message: "비밀번호가 틀렸습니다." });
