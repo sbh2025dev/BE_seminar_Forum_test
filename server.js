@@ -20,7 +20,9 @@ app.use(
 app.use(passport.initialize());
 app.use(passport.session());
 
+// 로그인 검증 방식을 passport에 등록한다.
 passport.use(
+  // LocalStrategy: 아이디와 비밀번호로 로그인 검증하는 방식
   new LocalStrategy(async (username, password, done) => {
     try {
       const user = await db.collection("user").findOne({ username });
