@@ -11,7 +11,7 @@ app.set("view engine", "ejs");
 app.use(
   // secret: 세션 쿠키를 암호화할 때 사용하는 문자열
   // resave: 세션이 변경되지 않아도 매 요청마다 세션을 저장할지 여부
-  // saveUninitialized: 초기화되지 않은 세션을 저장할지 여부
+  // saveUninitialized: 초기화되지 않은 세션을 저장할지 여부 (로그인한 사람의 세션만 저장하기 위해 false로 설정)
   // cookie: 세션 쿠키의 설정, maxAge는 쿠키의 유효 기간을 밀리초 단위로 설정한다. 설정 안하면 브라우저 종료할 때까지 유지
   session({
     secret: "forum-secret-key",
