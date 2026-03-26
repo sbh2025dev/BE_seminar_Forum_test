@@ -105,10 +105,12 @@
           <p style="margin-top:6px; font-size:0.85rem; color:#888;">작성자: <%= posts[i].author %></p>
         </div>
       </a>
+      <% if (user && user.username === posts[i].author) { %>
       <a href="/edit/<%= posts[i]._id %>">
         <button class="edit-btn">Edit</button>
       </a>
       <button class="delete-btn" data-id="<%= posts[i]._id %>">Delete</button>
+      <% } %>
     </div>
 
     <% } %>

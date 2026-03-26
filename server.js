@@ -173,6 +173,7 @@ app.get("/edit/:id", isLoggedIn, async (request, response) => {
       .collection("post")
       .findOne({ _id: new ObjectId(request.params.id) });
     if (!post) return response.status(404).send("Post not found.");
+    if (post.author !== request.user.username) return response.redirect("/list");
     response.render("edit", { post });
   } catch (err) {
     console.log(err);
@@ -182,6 +183,12 @@ app.get("/edit/:id", isLoggedIn, async (request, response) => {
 
 app.post("/edit/:id", isLoggedIn, async (request, response) => {
   try {
+    const post = await db
+      .collection("post")
+      .findOne({ _id: new ObjectId(request.params.id) });
+    if (!post) return response.status(404).send("Post not found.");
+    if (post.author !== request.user.username)
+      return response.status(403).send("Forbidden.");
     await db
       .collection("post")
       .updateOne(
@@ -197,6 +204,12 @@ app.post("/edit/:id", isLoggedIn, async (request, response) => {
 
 app.delete("/post/:id", isLoggedIn, async (request, response) => {
   try {
+    const post = await db
+      .collection("post")
+      .findOne({ _id: new ObjectId(request.params.id) });
+    if (!post) return response.status(404).json({ ok: false });
+    if (post.author !== request.user.username)
+      return response.status(403).json({ ok: false });
     await db
       .collection("post")
       .deleteOne({ _id: new ObjectId(request.params.id) });
