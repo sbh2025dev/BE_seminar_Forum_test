@@ -12,10 +12,14 @@ app.use(
   // secret: 세션 쿠키를 암호화할 때 사용하는 문자열
   // resave: 세션이 변경되지 않아도 매 요청마다 세션을 저장할지 여부
   // saveUninitialized: 초기화되지 않은 세션을 저장할지 여부
+  // cookie: 세션 쿠키의 설정, maxAge는 쿠키의 유효 기간을 밀리초 단위로 설정한다. 설정 안하면 브라우저 종료할 때까지 유지
   session({
     secret: "forum-secret-key",
     resave: false,
     saveUninitialized: false,
+    cookie: {
+      maxAge: 1000 * 60 * 60 * 24, // 24 hours
+    },
   }),
 );
 
@@ -83,6 +87,7 @@ app.post("/login", async (req, res, next) => {
     const match = await bcrypt.compare(req.body.password, user.password);
     if (!match) return res.render("login", { error: "비밀번호가 틀렸습니다." });
 
+    // 세션에 로그인한 사용자 ID를 저장한다. 이후 요청에서 이 ID를 사용하여 로그인한 사용자를 식별할 수 있다.
     req.session.userId = user._id.toString();
     res.redirect("/list");
   } catch (err) {
@@ -173,7 +178,8 @@ app.get("/edit/:id", isLoggedIn, async (request, response) => {
       .collection("post")
       .findOne({ _id: new ObjectId(request.params.id) });
     if (!post) return response.status(404).send("Post not found.");
-    if (post.author !== request.user.username) return response.redirect("/list");
+    if (post.author !== request.user.username)
+      return response.redirect("/list");
     response.render("edit", { post });
   } catch (err) {
     console.log(err);
