@@ -1,0 +1,116 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Chat</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        max-width: 900px;
+        margin: 0 auto;
+        padding: 20px;
+      }
+      nav {
+        margin-bottom: 20px;
+      }
+      nav a {
+        margin-right: 15px;
+        text-decoration: none;
+        color: #333;
+      }
+      nav a:hover {
+        text-decoration: underline;
+      }
+      #messages {
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        padding: 15px;
+        height: 400px;
+        overflow-y: auto;
+        margin-bottom: 10px;
+      }
+      .message {
+        margin-bottom: 8px;
+      }
+      .message strong {
+        color: #333;
+      }
+      .message span {
+        color: #555;
+      }
+      #chat-form {
+        display: flex;
+        gap: 8px;
+      }
+      #chat-form input {
+        flex: 1;
+        padding: 10px;
+        font-size: 1rem;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+      }
+      #chat-form button {
+        padding: 10px 20px;
+        font-size: 1rem;
+        cursor: pointer;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        background: #fff;
+        color: #333;
+      }
+      #chat-form button:hover {
+        background-color: #f5f5f5;
+        border-color: #bbb;
+      }
+    </style>
+  </head>
+  <body>
+    <%- include('nav') %>
+
+    <h1>Chat Room</h1>
+
+    <div id="messages"></div>
+
+    <% if (locals.user) { %>
+      <form id="chat-form">
+        <input id="msg" type="text" placeholder="Type a message..." autocomplete="off" />
+        <button type="submit">Send</button>
+      </form>
+    <% } else { %>
+      <p style="color:#888;"><a href="/login">Login</a> to send messages.</p>
+    <% } %>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+      const socket = io();
+      const messages = document.getElementById('messages');
+      
+      // socket.on: 서버에서 'chat message' 이벤트가 발생할 때마다 실행되는 이벤트 리스너, data: 서버에서 보낸 메시지 데이터
+      socket.on('chat message', (data) => {
+        const div = document.createElement('div');
+        div.className = 'message';
+        const b = document.createElement('strong');
+        b.textContent = data.username + ': ';
+        const s = document.createElement('span');
+        s.textContent = data.text;
+        div.appendChild(b);
+        div.appendChild(s);
+        messages.appendChild(div);
+        messages.scrollTop = messages.scrollHeight;
+      });
+
+      <% if (locals.user) { %>
+      const form = document.getElementById('chat-form');
+      const input = document.getElementById('msg');
+      form.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const text = input.value.trim();
+        if (!text) return;
+        socket.emit('chat message', { username: '<%= locals.user.username %>', text });
+        input.value = '';
+      });
+      <% } %>
+    </script>
+  </body>
+</html>
